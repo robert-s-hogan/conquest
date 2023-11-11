@@ -1,0 +1,17 @@
+type Campaign @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  title: String!
+  description: String
+  accountID: ID! @index(name: "byAccount", sortKeyFields: ["createdAt"])
+  createdAt: AWSDateTime
+  account: Account @belongsTo(fields: ["accountID"])
+}
+
+type Account @model @auth(rules: [{ allow: public }, { allow: private }]) {
+  id: ID!
+  authId: String!
+  username: String
+  profilePic: String
+  createdAt: AWSDateTime
+  campaigns: [Campaign] @hasMany(indexName: "byAccount", fields: ["id"])
+}
