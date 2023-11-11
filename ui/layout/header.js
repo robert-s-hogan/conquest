@@ -4,7 +4,6 @@ import { Auth } from "aws-amplify";
 async function signOut() {
   try {
     await Auth.signOut();
-    // Redirect or update state after sign out
   } catch (error) {
     console.log("Error signing out: ", error);
   }
@@ -13,7 +12,7 @@ async function signOut() {
 function Header() {
   return (
     <header className='flex justify-between items-center bg-gray-700 text-white p-4'>
-      <h1 className=''>Conquest</h1>
+      <h1>Conquest</h1>
       <nav className='flex items-center space-x-4'>
         <Link href='/'>Home</Link>
         <Link href='/account'>Account</Link>
