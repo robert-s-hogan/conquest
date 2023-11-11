@@ -1,8 +1,10 @@
+"use client";
+
 import Head from "next/head";
 import Image from "next/image";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { Auth } from "aws-amplify";
-import Header from "../ui/layout/header";
+import Header from "./ui/dashboard/header";
 
 function Home() {
   async function signOut() {

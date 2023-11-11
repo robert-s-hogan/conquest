@@ -2,22 +2,39 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Auth, API, graphqlOperation } from "aws-amplify";
 import { withAuthenticator } from "@aws-amplify/ui-react";
-import { useModal } from "../hooks/useModal";
+import { GraphQLResult } from "@aws-amplify/api-graphql";
+
+import { useModal } from "../../../hooks/useModal";
 import {
   createCampaign,
   createAccount as createAccountMutation,
   updateAccount as updateAccountMutation,
-} from "../src/graphql/mutations";
-import { listAccounts } from "../src/graphql/queries";
+} from "../../graphql/mutations";
+import { listAccounts } from "../../graphql/queries";
 
-import Header from "../ui/layout/header";
-import Campaigns from "../ui/layout/campaigns";
+import Header from "../ui/dashboard/header";
+import * as APITypes from "../../API";
 
-function Account() {
+interface AccountType {
+  __typename: "Account";
+  id: string;
+  authId: string;
+  username?: string | null;
+  profilePic?: string | null;
+  createdAt?: string | null;
+  updatedAt: string;
+  _version: number;
+  _deleted?: boolean | null;
+  _lastChangedAt: number;
+  // Add other fields as needed
+}
+
+function AccountPage() {
   const router = useRouter();
   const { isShowing, toggle } = useModal();
 
-  const [userAccount, setUserAccount] = useState(null);
+  const [accounts, setAccounts] = useState<AccountType[]>([]);
+  const [userAccount, setUserAccount] = useState<AccountType | null>(null);
 
   useEffect(() => {
     const checkAndCreateAccount = async () => {
@@ -25,22 +42,28 @@ function Account() {
         const user = await Auth.currentAuthenticatedUser();
         const userAuthId = user.attributes.sub;
 
-        const accountsData = await API.graphql(
+        const accountsData = (await API.graphql(
           graphqlOperation(listAccounts, {
             filter: { authId: { eq: userAuthId } },
           })
-        );
+        )) as GraphQLResult<APITypes.ListAccountsQuery>;
 
-        const existingAccount = accountsData.data.listAccounts.items[0];
-        if (existingAccount) {
-          setUserAccount(existingAccount);
-        } else {
-          const newAccountData = await API.graphql(
-            graphqlOperation(createAccountMutation, {
-              input: { authId: userAuthId },
-            })
-          );
-          setUserAccount(newAccountData.data.createAccount);
+        // Type guard to check if 'data' exists in the response
+        if ("data" in accountsData && accountsData.data) {
+          const existingAccount = accountsData.data?.listAccounts?.items[0];
+          if (existingAccount) {
+            setUserAccount(existingAccount);
+          } else {
+            const newAccountData = (await API.graphql(
+              graphqlOperation(createAccountMutation, {
+                input: { authId: userAuthId },
+              })
+            )) as GraphQLResult<APITypes.CreateAccountMutation>;
+
+            if (newAccountData.data) {
+              setUserAccount(newAccountData.data.createAccount as AccountType);
+            }
+          }
         }
       } catch (error) {
         console.error("Error checking/creating account", error);
@@ -51,7 +74,7 @@ function Account() {
     checkAndCreateAccount();
   }, [router]);
 
-  async function addCampaign(title, description) {
+  async function addCampaign(title: string, description: string) {
     if (!userAccount) {
       console.error("No user account available");
       return;
@@ -64,38 +87,49 @@ function Account() {
     };
 
     try {
-      const newCampaign = await API.graphql(
+      const newCampaign = (await API.graphql(
         graphqlOperation(createCampaign, { input: campaignDetails })
-      );
+      )) as GraphQLResult<any>; // Type assertion here
+
       return newCampaign.data.createCampaign;
     } catch (error) {
       console.error("Error adding campaign: ", error);
     }
   }
 
-  const [accounts, setAccounts] = useState([]);
-
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
         const userData = await Auth.currentAuthenticatedUser();
-        const userAuthId = userData.attributes.sub; // Using 'sub' as the user's unique identifier
+        const userAuthId = userData.attributes.sub;
 
-        // Use the 'listAccounts' query with a filter for the 'authId'
-        const accountsData = await API.graphql(
+        const accountsData = (await API.graphql(
           graphqlOperation(listAccounts, {
             filter: {
               authId: {
-                eq: userAuthId, // This filters the accounts to the one(s) that match the authenticated user's ID
+                eq: userAuthId,
               },
             },
           })
-        );
+        )) as GraphQLResult<APITypes.ListAccountsQuery>;
 
-        // Assuming we have items array in the response as per the GraphQL schema
-        if (accountsData.data.listAccounts.items.length > 0) {
-          // Set the fetched accounts to the state
-          setAccounts(accountsData.data.listAccounts.items);
+        // Check if 'data' and 'listAccounts' and 'items' are not undefined
+        if (
+          accountsData.data &&
+          accountsData.data.listAccounts &&
+          accountsData.data.listAccounts.items
+        ) {
+          if (
+            accountsData.data &&
+            accountsData.data.listAccounts &&
+            accountsData.data.listAccounts.items
+          ) {
+            const filteredAccounts =
+              accountsData.data.listAccounts.items.filter(
+                (item) => item !== null
+              ) as AccountType[];
+            setAccounts(filteredAccounts);
+          }
         }
       } catch (error) {
         console.error("Error fetching accounts:", error);
@@ -105,7 +139,11 @@ function Account() {
     fetchAccounts();
   }, []);
 
-  async function editAccount(accountId, username, profilePic) {
+  async function editAccount(
+    accountId: string,
+    username: string,
+    profilePic: string
+  ) {
     try {
       const accountDetails = {
         id: accountId,
@@ -113,14 +151,23 @@ function Account() {
         profilePic: profilePic,
       };
 
-      const updatedAccountData = await API.graphql(
+      const result = await API.graphql(
         graphqlOperation(updateAccountMutation, { input: accountDetails })
       );
 
-      console.log(updatedAccountData);
-      setUserAccount(updatedAccountData.data.updateAccount);
+      // Type guard to ensure result is GraphQLResult
+      if ("data" in result) {
+        const updatedAccountData = result as GraphQLResult<any>;
 
-      return updatedAccountData.data.updateAccount;
+        const updatedAccounts = accounts.map((account) =>
+          account.id === updatedAccountData.data.updateAccount.id
+            ? updatedAccountData.data.updateAccount
+            : account
+        );
+        setAccounts(updatedAccounts);
+
+        return updatedAccountData.data.updateAccount;
+      }
     } catch (error) {
       console.error("Error updating account: ", error);
     }
@@ -133,7 +180,7 @@ function Account() {
   });
 
   // Handles form input changes
-  const handleEditFormChange = (e) => {
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditFormData((prevFormData) => ({
       ...prevFormData,
@@ -141,10 +188,14 @@ function Account() {
     }));
   };
 
-  // Handles the form submission for editing account details
-  const handleEditFormSubmit = async (e) => {
+  const handleEditFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { username, profilePic } = editFormData;
+
+    if (!userAccount) {
+      console.error("User account is not available");
+      return;
+    }
 
     await editAccount(userAccount.id, username, profilePic);
 
@@ -169,11 +220,10 @@ function Account() {
           <pre>{JSON.stringify(userAccount, null, 2)}</pre>
         </div>
       )}
-      <Campaigns />
       <button
         className='btn'
         onClick={() => {
-          addCampaign("123", "My Campaign", "This is my campaign");
+          addCampaign("123", "My Campaign");
         }}>
         Add Campaign
       </button>
@@ -247,4 +297,4 @@ function Account() {
   );
 }
 
-export default withAuthenticator(Account);
+export default withAuthenticator(AccountPage);
