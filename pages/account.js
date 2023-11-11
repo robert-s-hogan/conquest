@@ -20,25 +20,21 @@ function Account() {
   const [userAccount, setUserAccount] = useState(null);
 
   useEffect(() => {
-    // Wrapped in an async function because useEffect cannot be directly async
     const checkAndCreateAccount = async () => {
       try {
         const user = await Auth.currentAuthenticatedUser();
         const userAuthId = user.attributes.sub;
 
-        // Fetch accounts related to the authenticated user
         const accountsData = await API.graphql(
           graphqlOperation(listAccounts, {
             filter: { authId: { eq: userAuthId } },
           })
         );
 
-        // Check if there's already an account for this user
         const existingAccount = accountsData.data.listAccounts.items[0];
         if (existingAccount) {
           setUserAccount(existingAccount);
         } else {
-          // Create a new account if none exist
           const newAccountData = await API.graphql(
             graphqlOperation(createAccountMutation, {
               input: { authId: userAuthId },
