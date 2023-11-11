@@ -12,7 +12,7 @@ async function signOut() {
 function Header() {
   return (
     <header className='flex justify-between items-center bg-gray-700 text-white p-4'>
-      <h1>Conquest</h1>
+      <h1>Conquest App</h1>
       <nav className='flex items-center space-x-4'>
         <Link href='/'>Home</Link>
         <Link href='/account'>Account</Link>
