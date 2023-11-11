@@ -4,16 +4,16 @@ import { Auth, API, graphqlOperation } from "aws-amplify";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { GraphQLResult } from "@aws-amplify/api-graphql";
 
-import { useModal } from "../../../hooks/useModal";
+import { useModal } from "../hooks/useModal";
 import {
   createCampaign,
   createAccount as createAccountMutation,
   updateAccount as updateAccountMutation,
-} from "../../graphql/mutations";
-import { listAccounts } from "../../graphql/queries";
+} from "../graphql/mutations";
+import { listAccounts } from "../graphql/queries";
 
-import Header from "../ui/dashboard/header";
-import * as APITypes from "../../API";
+import Header from "../components/header";
+import * as APITypes from "../graphql/API";
 
 interface AccountType {
   __typename: "Account";

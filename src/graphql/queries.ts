@@ -2,7 +2,7 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-import * as APITypes from "../API";
+import * as APITypes from "./API";
 type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryInput: InputType;
   __generatedQueryOutput: OutputType;
@@ -98,7 +98,8 @@ export const syncCampaigns = /* GraphQL */ `query SyncCampaigns(
   APITypes.SyncCampaignsQueryVariables,
   APITypes.SyncCampaignsQuery
 >;
-export const campaignsByAccountIDAndCreatedAt = /* GraphQL */ `query CampaignsByAccountIDAndCreatedAt(
+export const campaignsByAccountIDAndCreatedAt =
+  /* GraphQL */ `query CampaignsByAccountIDAndCreatedAt(
   $accountID: ID!
   $createdAt: ModelStringKeyConditionInput
   $sortDirection: ModelSortDirection
@@ -132,9 +133,9 @@ export const campaignsByAccountIDAndCreatedAt = /* GraphQL */ `query CampaignsBy
   }
 }
 ` as GeneratedQuery<
-  APITypes.CampaignsByAccountIDAndCreatedAtQueryVariables,
-  APITypes.CampaignsByAccountIDAndCreatedAtQuery
->;
+    APITypes.CampaignsByAccountIDAndCreatedAtQueryVariables,
+    APITypes.CampaignsByAccountIDAndCreatedAtQuery
+  >;
 export const getAccount = /* GraphQL */ `query GetAccount($id: ID!) {
   getAccount(id: $id) {
     id
