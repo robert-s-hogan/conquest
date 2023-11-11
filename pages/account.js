@@ -10,8 +10,8 @@ import {
 } from "../src/graphql/mutations";
 import { listAccounts } from "../src/graphql/queries";
 
-import Header from "../ui/layout/Header";
-import Campaigns from "../ui/layout/Campaigns";
+import Header from "../ui/layout/header";
+import Campaigns from "../ui/layout/campaigns";
 
 function Account() {
   const router = useRouter();
