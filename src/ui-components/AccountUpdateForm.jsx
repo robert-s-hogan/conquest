@@ -96,10 +96,10 @@ export default function AccountUpdateForm(props) {
   };
   return (
     <Grid
-      as="form"
-      rowGap="15px"
-      columnGap="15px"
-      padding="20px"
+      as='form'
+      rowGap='15px'
+      columnGap='15px'
+      padding='20px'
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
@@ -151,10 +151,9 @@ export default function AccountUpdateForm(props) {
         }
       }}
       {...getOverrideProps(overrides, "AccountUpdateForm")}
-      {...rest}
-    >
+      {...rest}>
       <TextField
-        label="Auth id"
+        label='Auth id'
         isRequired={true}
         isReadOnly={false}
         value={authId}
@@ -178,10 +177,9 @@ export default function AccountUpdateForm(props) {
         onBlur={() => runValidationTasks("authId", authId)}
         errorMessage={errors.authId?.errorMessage}
         hasError={errors.authId?.hasError}
-        {...getOverrideProps(overrides, "authId")}
-      ></TextField>
+        {...getOverrideProps(overrides, "authId")}></TextField>
       <TextField
-        label="Username"
+        label='Username'
         isRequired={false}
         isReadOnly={false}
         value={username}
@@ -205,10 +203,9 @@ export default function AccountUpdateForm(props) {
         onBlur={() => runValidationTasks("username", username)}
         errorMessage={errors.username?.errorMessage}
         hasError={errors.username?.hasError}
-        {...getOverrideProps(overrides, "username")}
-      ></TextField>
+        {...getOverrideProps(overrides, "username")}></TextField>
       <TextField
-        label="Profile pic"
+        label='Profile pic'
         isRequired={false}
         isReadOnly={false}
         value={profilePic}
@@ -232,13 +229,12 @@ export default function AccountUpdateForm(props) {
         onBlur={() => runValidationTasks("profilePic", profilePic)}
         errorMessage={errors.profilePic?.errorMessage}
         hasError={errors.profilePic?.hasError}
-        {...getOverrideProps(overrides, "profilePic")}
-      ></TextField>
+        {...getOverrideProps(overrides, "profilePic")}></TextField>
       <TextField
-        label="Created at"
+        label='Created at'
         isRequired={false}
         isReadOnly={false}
-        type="datetime-local"
+        type='datetime-local'
         value={createdAt && convertToLocal(new Date(createdAt))}
         onChange={(e) => {
           let value =
@@ -261,36 +257,31 @@ export default function AccountUpdateForm(props) {
         onBlur={() => runValidationTasks("createdAt", createdAt)}
         errorMessage={errors.createdAt?.errorMessage}
         hasError={errors.createdAt?.hasError}
-        {...getOverrideProps(overrides, "createdAt")}
-      ></TextField>
+        {...getOverrideProps(overrides, "createdAt")}></TextField>
       <Flex
-        justifyContent="space-between"
-        {...getOverrideProps(overrides, "CTAFlex")}
-      >
+        justifyContent='space-between'
+        {...getOverrideProps(overrides, "CTAFlex")}>
         <Button
-          children="Reset"
-          type="reset"
+          children='Reset'
+          type='reset'
           onClick={(event) => {
             event.preventDefault();
             resetStateValues();
           }}
           isDisabled={!(idProp || accountModelProp)}
-          {...getOverrideProps(overrides, "ResetButton")}
-        ></Button>
+          {...getOverrideProps(overrides, "ResetButton")}></Button>
         <Flex
-          gap="15px"
-          {...getOverrideProps(overrides, "RightAlignCTASubFlex")}
-        >
+          gap='15px'
+          {...getOverrideProps(overrides, "RightAlignCTASubFlex")}>
           <Button
-            children="Submit"
-            type="submit"
-            variation="primary"
+            children='Submit'
+            type='submit'
+            variation='primary'
             isDisabled={
               !(idProp || accountModelProp) ||
               Object.values(errors).some((e) => e?.hasError)
             }
-            {...getOverrideProps(overrides, "SubmitButton")}
-          ></Button>
+            {...getOverrideProps(overrides, "SubmitButton")}></Button>
         </Flex>
       </Flex>
     </Grid>

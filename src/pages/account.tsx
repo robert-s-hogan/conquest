@@ -3,6 +3,9 @@ import { useRouter } from "next/router";
 import { Auth, API, graphqlOperation } from "aws-amplify";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import { GraphQLResult } from "@aws-amplify/api-graphql";
+import Image from "next/image";
+
+import CustomAccountUpdateForm from "../components/CustomAccountUpdateForm";
 
 import { useModal } from "../hooks/useModal";
 import {
@@ -96,6 +99,20 @@ function AccountPage() {
       console.error("Error adding campaign: ", error);
     }
   }
+
+  const closeModal = () => {
+    if (isShowing) {
+      toggle();
+    }
+  };
+
+  // Function to handle backdrop click
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Check if the click is on the backdrop itself and not its children
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -208,86 +225,57 @@ function AccountPage() {
       <Header />
 
       <div className='flex justify-between'>
-        <h1 className='text-2xl font-bold'>Account</h1>
-        <button onClick={toggle} className='btn'>
-          Edit Account
-        </button>
-      </div>
-
-      <h1>Account Page</h1>
-      {userAccount && (
-        <div>
-          <pre>{JSON.stringify(userAccount, null, 2)}</pre>
+        <div className='flex space-x-4 items-center'>
+          <h1 className='text-2xl font-bold'>
+            Welcome {userAccount && userAccount?.username}
+          </h1>
+          <button className='btn max-h-12' onClick={toggle}>
+            Edit Account
+          </button>
         </div>
-      )}
-      <button
-        className='btn'
-        onClick={() => {
-          addCampaign("123", "My Campaign");
-        }}>
-        Add Campaign
-      </button>
+
+        {userAccount && userAccount?.profilePic && (
+          <Image
+            width={100}
+            height={100}
+            // className='rounded-full'
+            src={userAccount?.profilePic}
+            alt='Profile picture'
+          />
+        )}
+      </div>
       <dialog
         open={isShowing}
         className='fullscreen-modal'
         aria-labelledby='modal-title'
         role='dialog'
         aria-modal='true'>
-        <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity'></div>
-
+        <div
+          className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity'
+          onClick={toggle} // Close modal when the backdrop is clicked
+        ></div>
         <div className='fixed z-10 inset-0 overflow-y-auto'>
-          <div className='centered-content min-h-full p-4 text-center'>
+          <div
+            className='centered-content min-h-full p-4 text-center'
+            onClick={(e) => e.stopPropagation()} // Prevent clicks from closing the modal
+          >
             <div className='w-full relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all md:my-8 md:w-full md:max-w-lg'>
-              {/* Your modal content here */}
               <div className='p-6'>
-                {/* Dialog content goes here */}
-                <div className='flex justify-between'>
-                  <h2 className='text-lg'>Edit Account Details</h2>
-                  <button onClick={toggle}>Close</button>
+                <div className='flex justify-end text-2xl' onClick={toggle}>
+                  X
                 </div>
-                {/* Form for editing account details */}
-                <form
-                  onSubmit={handleEditFormSubmit}
-                  className='mt-8 space-y-6'>
-                  <div className='rounded-md shadow-sm -space-y-px'>
-                    <div>
-                      <label htmlFor='username' className='sr-only'>
-                        Username
-                      </label>
-                      <input
-                        id='username'
-                        name='username'
-                        type='text'
-                        className='appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm'
-                        placeholder='Enter username'
-                        value={editFormData.username}
-                        onChange={handleEditFormChange}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor='profilePic' className='sr-only'>
-                        Profile Picture URL
-                      </label>
-                      <input
-                        id='profilePic'
-                        name='profilePic'
-                        type='text'
-                        className='appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm'
-                        placeholder='Profile Picture URL'
-                        value={editFormData.profilePic}
-                        onChange={handleEditFormChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <button
-                      type='submit'
-                      className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
-                      Save Changes
-                    </button>
-                  </div>
-                </form>
+                <CustomAccountUpdateForm
+                  account={userAccount}
+                  onFormSubmit={async (updatedAccount: AccountType) => {
+                    await editAccount(
+                      updatedAccount.id,
+                      updatedAccount.username || "",
+                      updatedAccount.profilePic || ""
+                    );
+                    setUserAccount(updatedAccount); // Update local state
+                    closeModal(); // Close modal
+                  }}
+                />
               </div>
             </div>
           </div>
